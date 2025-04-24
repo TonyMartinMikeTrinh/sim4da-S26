@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
 public class Simulator {
-    private final String version = "sim4da V2.0";
+    private final String version = "sim4da Summer 2025";
     private  Simulator () {
         System.setProperty("PID", String.valueOf(ProcessHandle.current().pid())); // Needed for logback
         logger = LoggerFactory.getLogger(sim4da.class);

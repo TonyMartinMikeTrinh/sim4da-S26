@@ -2,7 +2,7 @@
   <artifact type="jar" name="sim4da-v2">
     <output-path>$PROJECT_DIR$/out/artifacts/sim4da_v2</output-path>
     <root id="archive" name="sim4da-v2.jar">
-      <element id="module-output" name="sim4da-v2" />
+      <element id="module-output" name="sim4da-S25" />
       <element id="extracted-dir" path="$PROJECT_DIR$/lib/junit-jupiter-5.10.2.jar" path-in-jar="/" />
       <element id="extracted-dir" path="$PROJECT_DIR$/lib/junit-jupiter-api-5.10.2.jar" path-in-jar="/" />
       <element id="extracted-dir" path="$PROJECT_DIR$/lib/opentest4j-1.3.0.jar" path-in-jar="/" />
