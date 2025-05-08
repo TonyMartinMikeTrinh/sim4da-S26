@@ -38,7 +38,7 @@ public class NetworkConnection {
 
     public Message receive () {
         Message m = network.receive(this);
-        logger.debug("Received message from "+m.queryHeader("sender"));
+        logger.debug("Received message from "+m.getSender());
         return m;
     }
 
