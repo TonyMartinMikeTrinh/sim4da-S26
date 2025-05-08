@@ -7,8 +7,8 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class MessageTest {
 
-    class Token extends Message {
-        private final String token;
+    static class Token extends Message {
+        public final String token;
 
         public Token(String token) {
             super();
@@ -16,14 +16,24 @@ class MessageTest {
         }
 
         // Copy constructor for base fields
-        private Token(Token original) {
+        public Token(Token original) {
             super(original);
             this.token = original.token;
         }
+    }
 
-        @Override
-        public Message copy() {
-            return new Token(this);
+    static class ValueToken extends Token {
+        public int value;
+
+        public ValueToken(String token, int value) {
+            super(token);
+            this.value = value;
+        }
+
+        // Copy constructor for base fields
+        public ValueToken(ValueToken original) {
+            super(original);
+            this.value = original.value;
         }
     }
 
@@ -36,6 +46,16 @@ class MessageTest {
         Token token = new Token("token");
         assertEquals("token", token.token);
         assertEquals("Unknown", token.getSender());
+
+        ValueToken value = new ValueToken("value", 42);
+        assertEquals("value", value.token);
+        assertEquals(42, value.value);
+
+        Message m = value.copy();
+        System.out.println("m of class " + m.getClass());
+        assertInstanceOf(ValueToken.class, m);
+        assertEquals("value", ((ValueToken) m).token);
+        assertEquals(42, ((ValueToken) m).value);
     };
 
 }
