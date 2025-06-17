@@ -1,7 +1,10 @@
-package org.oxoo2a.sim4da;
+package org.oxoo2a.test;
+
+import org.oxoo2a.sim4da.Message;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.oxoo2a.sim4da.Message;
 
 import static org.junit.jupiter.api.Assertions.*;
 

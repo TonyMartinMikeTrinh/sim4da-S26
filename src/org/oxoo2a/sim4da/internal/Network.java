@@ -1,5 +1,8 @@
-package org.oxoo2a.sim4da;
+package org.oxoo2a.sim4da.internal;
 
+import org.oxoo2a.sim4da.Message;
+import org.oxoo2a.sim4da.NetworkConnection;
+import org.oxoo2a.sim4da.UnknownNodeException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -13,7 +16,7 @@ public class Network {
     private Network() {
     }
 
-    private record Node ( NetworkConnection nc, NodeProxy np ) {}
+    private record Node (NetworkConnection nc, NodeProxy np ) {}
     private final Map<String,Node> nodes = new HashMap<>();
     private final Logger logger = LoggerFactory.getLogger(Network.class);
     private static Network instance = null;
@@ -46,13 +49,21 @@ public class Network {
         return nodes.size();
     }
 
-    public void send ( Message message, NetworkConnection sender, String receiver_name ) throws UnknownNodeException {
+    public void send (Message message, NetworkConnection sender, String receiver_name ) throws UnknownNodeException {
         if (!nodes.containsKey(receiver_name)) {
             logger.error("Attempt to send message to non-existent node " + receiver_name);
             throw new UnknownNodeException(receiver_name);
         }
         Message copy = message.copy();
-        copy.setSender(sender.NodeName());
+        try {
+            var f = Message.class.getDeclaredField("sender");
+            f.setAccessible(true);
+            f.set(copy, sender.NodeName());
+        } catch (Exception e) {
+            System.err.println("FATAL: Internal error — unable to set sender field in Message via reflection.");
+            e.printStackTrace(System.err);
+            System.exit(1); // Non-zero indicates abnormal termination
+        }
         NodeProxy receiver = nodes.get(receiver_name).np;
         receiver.deliver(copy, sender);
     }

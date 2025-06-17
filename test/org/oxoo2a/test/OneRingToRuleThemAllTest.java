@@ -1,4 +1,9 @@
-package org.oxoo2a.sim4da;
+package org.oxoo2a.test;
+
+import org.oxoo2a.sim4da.Message;
+import org.oxoo2a.sim4da.NetworkConnection;
+import org.oxoo2a.sim4da.Node;
+import org.oxoo2a.sim4da.Simulator;
 
 import org.junit.jupiter.api.Test;
 

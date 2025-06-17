@@ -1,5 +1,7 @@
 package org.oxoo2a.sim4da;
 
+import org.oxoo2a.sim4da.internal.Network;
+import org.oxoo2a.sim4da.internal.sim4da;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

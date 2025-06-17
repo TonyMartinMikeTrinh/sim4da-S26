@@ -1,4 +1,8 @@
-package org.oxoo2a.sim4da;
+package org.oxoo2a.sim4da.internal;
+
+import org.oxoo2a.sim4da.Message;
+import org.oxoo2a.sim4da.NetworkConnection;
+import org.oxoo2a.sim4da.SimulationBehavior;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -9,7 +13,7 @@ public class NodeProxy {
         this.nc = nc;
     }
 
-    public void deliver ( Message message, NetworkConnection sender ) {
+    public void deliver (Message message, NetworkConnection sender ) {
         synchronized (messages) {
             messages.add(new ReceivedMessage(message, sender));
             messages.notify();

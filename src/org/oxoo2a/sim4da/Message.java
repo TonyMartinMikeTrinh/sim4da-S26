@@ -15,10 +15,6 @@ public abstract class Message {
         this.sender = original.sender;
     }
 
-    protected void setSender(String sender) {
-        this.sender = sender;
-    }
-
     public String getSender() {
         return sender;
     }
