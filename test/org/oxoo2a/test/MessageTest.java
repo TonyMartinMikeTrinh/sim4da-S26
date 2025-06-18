@@ -48,7 +48,6 @@ class MessageTest {
     void testMessageBasics() {
         Token token = new Token("token");
         assertEquals("token", token.token);
-        assertEquals("Unknown", token.getSender());
 
         ValueToken value = new ValueToken("value", 42);
         assertEquals("value", value.token);

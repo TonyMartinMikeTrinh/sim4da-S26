@@ -54,32 +54,24 @@ public class Network {
             logger.error("Attempt to send message to non-existent node " + receiver_name);
             throw new UnknownNodeException(receiver_name);
         }
-        Message copy = message.copy();
-        try {
-            var f = Message.class.getDeclaredField("sender");
-            f.setAccessible(true);
-            f.set(copy, sender.NodeName());
-        } catch (Exception e) {
-            System.err.println("FATAL: Internal error — unable to set sender field in Message via reflection.");
-            e.printStackTrace(System.err);
-            System.exit(1); // Non-zero indicates abnormal termination
-        }
+        MessageInTransit mit = new MessageInTransit(message.copy(), sender.NodeName());
         NodeProxy receiver = nodes.get(receiver_name).np;
-        receiver.deliver(copy, sender);
+        receiver.deliver(mit, sender);
     }
 
     public void send ( Message message, NetworkConnection sender ) {
         for (Node n : nodes.values()) {
             if (n.nc != sender) {
-                n.np.deliver(message, sender);
+                MessageInTransit mit = new MessageInTransit(message.copy(), sender.NodeName());
+                n.np.deliver(mit, sender);
             }
         }
     }
 
-    public Message receive(NetworkConnection receiver) {
+    public MessageInTransit receive(NetworkConnection receiver) {
         Node n = nodes.get(receiver.NodeName());
-        Message m = n.np.receive();
-        return m;
+        MessageInTransit mit = n.np.receive();
+        return mit;
     }
 
     public void shutdown() {

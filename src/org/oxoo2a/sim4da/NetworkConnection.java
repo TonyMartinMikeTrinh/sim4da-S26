@@ -1,5 +1,6 @@
 package org.oxoo2a.sim4da;
 
+import org.oxoo2a.sim4da.internal.MessageInTransit;
 import org.oxoo2a.sim4da.internal.Network;
 import org.oxoo2a.sim4da.internal.NodeProxy;
 import org.slf4j.Logger;
@@ -63,12 +64,13 @@ public class NetworkConnection {
     /**
      * Receives the next message from the network.
      *
-     * @return the received Message.
+     * @return the received Message as a ReceivedMessage record.
      */
-    public Message receive () {
-        Message m = network.receive(this);
-        logger.debug("Received message from "+m.getSender());
-        return m;
+    public ReceivedMessage receive () {
+        MessageInTransit mit = network.receive(this);
+        logger.debug("Received message from "+mit.sender());
+        ReceivedMessage rm = new ReceivedMessage(mit.message(), mit.sender());
+        return rm;
     }
 
     /**

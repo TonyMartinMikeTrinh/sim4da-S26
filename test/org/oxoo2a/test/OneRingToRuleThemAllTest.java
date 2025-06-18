@@ -1,9 +1,6 @@
 package org.oxoo2a.test;
 
-import org.oxoo2a.sim4da.Message;
-import org.oxoo2a.sim4da.NetworkConnection;
-import org.oxoo2a.sim4da.Node;
-import org.oxoo2a.sim4da.Simulator;
+import org.oxoo2a.sim4da.*;
 
 import org.junit.jupiter.api.Test;
 
@@ -126,10 +123,10 @@ public class OneRingToRuleThemAllTest {
         public void engage() {
             boolean running = true;
             while (running) {
-                Message received = receive();
-                switch (received) {
+                ReceivedMessage received = receive();
+                switch (received.message()) {
                     case Token t -> {
-                        System.out.printf("Ring segment %s received token from %s%n", NodeName(), t.getSender());
+                        System.out.printf("Ring segment %s received token from %s%n", NodeName(), received.sender());
                         sleep(500);
                         int v = t.value;
                         System.out.printf("Ring segment %s received token %d\n", NodeName(), v);

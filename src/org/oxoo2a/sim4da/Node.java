@@ -60,7 +60,7 @@ public class Node {
      *
      * @return the received Message, or null in case of an error (mostly InterruptedException).
      */
-    protected Message receive () {
+    protected ReceivedMessage receive () {
         return nc.receive();
     }
 

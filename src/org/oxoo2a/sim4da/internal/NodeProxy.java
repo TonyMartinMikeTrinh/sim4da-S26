@@ -1,6 +1,7 @@
 package org.oxoo2a.sim4da.internal;
 
 import org.oxoo2a.sim4da.Message;
+import org.oxoo2a.sim4da.internal.MessageInTransit;
 import org.oxoo2a.sim4da.NetworkConnection;
 import org.oxoo2a.sim4da.SimulationBehavior;
 
@@ -13,14 +14,14 @@ public class NodeProxy {
         this.nc = nc;
     }
 
-    public void deliver (Message message, NetworkConnection sender ) {
+    public void deliver (MessageInTransit mit, NetworkConnection sender ) {
         synchronized (messages) {
-            messages.add(new ReceivedMessage(message, sender));
+            messages.add(new ReceivedMessage(mit, sender));
             messages.notify();
         }
     }
 
-    public Message receive () {
+    public MessageInTransit receive () {
         synchronized (messages) {
             while (messages.isEmpty()) {
                 try {
@@ -31,11 +32,11 @@ public class NodeProxy {
                 }
             }
             int candidate_index = SimulationBehavior.selectMessageInQueue(messages.size());
-            Message candidate = messages.remove(candidate_index).message;
-            return candidate;
+            ReceivedMessage candidate = messages.remove(candidate_index);
+            return candidate.mit;
         }
     }
-    private record ReceivedMessage ( Message message, NetworkConnection sender ) {};
+    private record ReceivedMessage ( MessageInTransit mit, NetworkConnection sender ) {};
 
     private final List<ReceivedMessage> messages = Collections.synchronizedList(new ArrayList<>());
     private final NetworkConnection nc;

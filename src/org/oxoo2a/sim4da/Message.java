@@ -4,19 +4,11 @@ import java.lang.reflect.Constructor;
 
 public abstract class Message {
 
-    private String sender;
-
     protected Message() {
-        this.sender = "Unknown";
     }
 
     // Copy constructor for base fields
     protected Message(Message original) {
-        this.sender = original.sender;
-    }
-
-    public String getSender() {
-        return sender;
     }
 
     public Message copy() {
