@@ -1,75 +1,162 @@
 # sim4da
 
-**A Java-based framework for simulating distributed algorithms.**
+**A Java framework for simulating distributed algorithms — built for teaching, scaled to be fun.**
 
-## Motivation
+Define your algorithm as an Actor that extends `Node` (or owns a
+`NetworkConnection`); declare a few records implementing `Message`; write your
+`engage()` loop in modern pattern-matching style. That's the whole framework.
 
-Distributed algorithms are notoriously difficult to prototype and test due to the complexity of networking, threading, and message handling. **sim4da** abstracts away these concerns, letting you concentrate on your algorithm’s logic. With minimal boilerplate, you can quickly spin up nodes, pass messages, and visualize behavior in a controlled simulation.
+## Quick start
 
-## Core Concepts
+Targets Java 25. Build and run the test suite:
 
-- **IS-A Node**  
-  Extend the `org.oxoo2a.sim4da.Node` base class. The framework handles thread creation, message routing, and logging. Override the `engage()` method to implement your node’s algorithmic steps, using helper methods like `send()`, `broadcast()`, and `receive()`.
+```
+./gradlew test
+```
 
-- **HAS-A NetworkConnection**  
-  For scenarios where inheritance isn’t ideal, instantiate and manage a `NetworkConnection` directly:
-  ```java
-  public class CustomAgent {
-      private final NetworkConnection nc = new NetworkConnection("Agent1");
+Run a single example:
 
-      public CustomAgent() {
-          nc.engage(this::runLogic);
-      }
+```
+./gradlew test --tests OneRingToRuleThemAllTest
+```
 
-      private void runLogic() {
-          // send, receive, process messages
-      }
-  }
-  ```
+For a guided walkthrough of your first simulation, see
+[FIRST_SIMULATION.md](FIRST_SIMULATION.md).
 
-## Quick Start
+## Core concepts
 
-### Example: Token Ring with IS-A Node
+### Messages are records
+
+Every message implements the `Message` marker interface. Records make
+defining one a single line:
 
 ```java
-public class RingNode extends Node {
-    public RingNode(String name) {
-        super(name);
+record Token(int value)  implements Message {}
+record EndMessage()      implements Message {}
+```
+
+Records are immutable, so the simulator can hand the same instance to every
+recipient without defensive copying. (For records that carry mutable
+containers — lists, maps, arrays — see the deep-immutability note in the
+`Message` Javadoc.)
+
+### Actors implement `engage()`
+
+The simplest Actor extends `Node` and overrides `engage()`:
+
+```java
+class RingSegment extends Node {
+    private final String nextId;
+
+    RingSegment(int id, int nextId) {
+        super(String.valueOf(id));
+        this.nextId = String.valueOf(nextId);
     }
 
     @Override
     protected void engage() {
-        // send, receive, process token passing
+        while (true) {
+            ReceivedMessage rm = receive();
+            if (rm == null) return;                // simulation has been shut down
+            switch (rm.message()) {
+                case Token(int v) -> send(new Token(v + 1), nextId);
+                case EndMessage e -> { send(e, nextId); return; }
+                default           -> throw new IllegalStateException(
+                        "Unexpected message: " + rm.message());
+            }
+        }
     }
 }
 ```
 
-### Example: Custom Agent with HAS-A NetworkConnection
+### The four verbs
+
+Inside `engage()`, an Actor talks to the rest of the simulated system through
+four operations:
+
+| Verb | Meaning |
+|---|---|
+| `send(message, toNodeName)`        | Non-throwing unicast. Drops silently if the recipient is unknown. |
+| `sendChecked(message, toNodeName)` | Strict unicast. Throws `UnknownNodeException` for unknown recipients. |
+| `broadcast(message)`               | Send to every other node. |
+| `receive()`                        | Block until a message arrives, or return `null` if the simulation has been shut down. |
+| `sleep(millis)`                    | Wait, interruptible by simulation shutdown. |
+
+The non-throwing variants are the default by design: code inside `engage()`
+should read like the algorithm, not like a Java tutorial on checked
+exceptions. Reach for `sendChecked` when the algorithm needs to react to a
+missing recipient.
+
+### IS-A vs. HAS-A
+
+If extending `Node` doesn't fit your design, own a `NetworkConnection`
+directly:
 
 ```java
-public class Agent {
-    private final NetworkConnection nc = new NetworkConnection("AgentX");
+class CustomActor {
+    private final NetworkConnection nc = new NetworkConnection("Agent1");
 
-    public Agent() {
-        nc.engage(this::main);
+    CustomActor() {
+        nc.engage(this::run);
     }
 
-    private void main() {
-        Message msg = nc.receive();
-        // algorithm logic
+    private void run() {
+        ReceivedMessage rm = nc.receive();
+        // ... algorithm ...
     }
 }
 ```
 
-## Logging Configuration
+`OneRingToRuleThemAllTest` mixes both: the `Coordinator` is HAS-A, the
+`RingSegment` is IS-A.
 
-By default, a “hidden” `logback.xml` on the classpath configures **DEBUG**-level logging for all network activity and node operations. To customize:
+### Lifecycle
 
-1. Create your own `logback.xml` in `src/main/resources/`.
-2. Define desired log levels, appenders, and formats.
-3. The simulator will automatically pick up your configuration instead of the default.
+```java
+Simulator simulator = Simulator.getInstance();
+// ... create your nodes ...
+simulator.simulate();          // run until all nodes terminate
+// or simulator.simulate(10);  // run with a 10-second timeout
+simulator.shutdown();          // resets framework state for the next run
+```
 
-## Further Reading
+There is exactly one `Simulator` per program — singleton by design, because
+"one program = one simulation" matches how students reason about distributed
+systems.
 
-- See `OneRingToRuleThemAllTest.java` for a complete token-passing simulation example.
-- Review Javadoc comments in `Node.java` and `NetworkConnection.java` for detailed API guidance.
+`Simulator.stop()` ends the simulation early — but only when called from
+*outside* (the test thread, an external scheduler), never from inside a node.
+A real distributed system cannot be unilaterally stopped; termination must
+propagate by messages or arrive from an external trigger. The framework
+enforces this: a node thread that calls `stop()` gets an
+`IllegalStateException` whose message names the legitimate alternatives.
+
+## Logging
+
+A default `logback.xml` on the classpath writes DEBUG-level logs to
+`sim4da-<PID>.log` so every send and every receive shows up. Each node's
+logger is named after the node, and virtual threads carry the same name —
+so `[%thread]` in your appender pattern is enough to see who logged what.
+
+To customize, place your own `logback.xml` on the classpath ahead of the
+default.
+
+## Modern Java in use
+
+The framework leans on Java 21+ language features as a matter of design:
+
+- **Records** for messages — immutability, deconstruction, no boilerplate.
+- **Pattern-matching `switch`** with record patterns at the receive site.
+- **Virtual threads** for nodes — a 10,000-node simulation costs heap, not
+  reserved stack.
+- **`ReentrantLock` + `Condition`** for the per-node mailbox, with proper
+  interrupt propagation.
+- **JPMS** module declaration (under review).
+
+## Further reading
+
+- [FIRST_SIMULATION.md](FIRST_SIMULATION.md) — guided walkthrough of the
+  token-ring example, line by line.
+- Javadoc on `Message`, `Node`, `NetworkConnection`, `Simulator`.
+- [VERDICT.md](VERDICT.md) — review notes that drove the recent
+  modernization (historical context for what changed and why).
