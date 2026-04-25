@@ -54,7 +54,7 @@ public class Network {
             logger.error("Attempt to send message to non-existent node " + receiver_name);
             throw new UnknownNodeException(receiver_name);
         }
-        MessageInTransit mit = new MessageInTransit(message.copy(), sender.NodeName());
+        MessageInTransit mit = new MessageInTransit(message, sender.NodeName());
         NodeProxy receiver = nodes.get(receiver_name).np;
         receiver.deliver(mit, sender);
     }
@@ -62,7 +62,7 @@ public class Network {
     public void send ( Message message, NetworkConnection sender ) {
         for (Node n : nodes.values()) {
             if (n.nc != sender) {
-                MessageInTransit mit = new MessageInTransit(message.copy(), sender.NodeName());
+                MessageInTransit mit = new MessageInTransit(message, sender.NodeName());
                 n.np.deliver(mit, sender);
             }
         }

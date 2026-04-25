@@ -14,7 +14,7 @@ public class RandomValues {
             System.err.println("Distribution function must return a value between 0 and 1");
             System.exit(-1);
         }
-        return min_value + Math.random() * (max_value - min_value);
+        return min_value + v * (max_value - min_value);
     }
 
     public long getLong ( long min_value, long max_value ) {
