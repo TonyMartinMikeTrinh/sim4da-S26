@@ -31,11 +31,19 @@ sourceSets {
     }
 }
 
-// The production code carries module-info.java, but the tests live in
-// `org.oxoo2a.test` and are simplest to compile/run on the classpath.
-// Disabling module-path inference for tests keeps the production module
-// intact while letting JUnit reflectively discover tests without an
-// `opens` directive.
+// The production code carries module-info.java and compiles as the
+// JPMS module `org.oxoo2a.sim4da`. The test source set is deliberately
+// kept on the classpath rather than the module path: tests get
+// white-box access to internals when they need it (e.g. the
+// RandomValuesTest exercises the package-private constructor of
+// RandomValues), and JUnit can reflectively discover @Test methods
+// without us having to add `opens` directives.
+//
+// The student-facing boundary — `org.oxoo2a.sim4da.internal` is
+// unexported by `module-info.java` — is unaffected by this choice.
+// When student code consumes sim4da as a real module, JPMS enforces
+// the boundary at their compile site: `import
+// org.oxoo2a.sim4da.internal.Network;` becomes a compile error.
 tasks.compileTestJava {
     modularity.inferModulePath = false
 }

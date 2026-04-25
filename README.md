@@ -151,7 +151,10 @@ The framework leans on Java 21+ language features as a matter of design:
   reserved stack.
 - **`ReentrantLock` + `Condition`** for the per-node mailbox, with proper
   interrupt propagation.
-- **JPMS** module declaration (under review).
+- **JPMS module** with `org.oxoo2a.sim4da` exported and
+  `org.oxoo2a.sim4da.internal` deliberately hidden. Student code cannot
+  import the simulation core — `import org.oxoo2a.sim4da.internal.Network;`
+  is a compile error rather than a tempting shortcut.
 
 ## Further reading
 
