@@ -72,5 +72,6 @@ public class Network {
     }
 
     public void shutdown() {
+        nodes.clear();
     }
 }

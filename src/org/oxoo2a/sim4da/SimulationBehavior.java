@@ -22,4 +22,9 @@ public class SimulationBehavior {
             return (int) messageQueueSelector.getLong(0, queueSize-1);
         }
     }
+
+    /** Resets all configurable behavior. Called from {@link Simulator#shutdown()}. */
+    public static void reset() {
+        messageQueueSelector = null;
+    }
 }
