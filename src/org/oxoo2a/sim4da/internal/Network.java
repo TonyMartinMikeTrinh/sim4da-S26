@@ -32,9 +32,9 @@ public class Network {
     }
 
     public void registerConnection(NetworkConnection networkConnection, NodeProxy nodeProxy) {
-        logger.debug("Registering connection for " + networkConnection.NodeName());
+        logger.debug("Registering connection for " + networkConnection.nodeName());
         Node n = new Node(networkConnection, nodeProxy);
-        nodes.put(networkConnection.NodeName(), n);
+        nodes.put(networkConnection.nodeName(), n);
     }
 
     public List<NetworkConnection> getAllNetworkConnections () {
@@ -49,26 +49,26 @@ public class Network {
         return nodes.size();
     }
 
-    public void send (Message message, NetworkConnection sender, String receiver_name ) throws UnknownNodeException {
-        if (!nodes.containsKey(receiver_name)) {
-            logger.error("Attempt to send message to non-existent node " + receiver_name);
-            throw new UnknownNodeException(receiver_name);
+    public void send (Message message, NetworkConnection sender, String receiverName ) throws UnknownNodeException {
+        if (!nodes.containsKey(receiverName)) {
+            logger.error("Attempt to send message to non-existent node " + receiverName);
+            throw new UnknownNodeException(receiverName);
         }
-        MessageInTransit mit = new MessageInTransit(message, sender.NodeName());
-        nodes.get(receiver_name).np.deliver(mit);
+        MessageInTransit mit = new MessageInTransit(message, sender.nodeName());
+        nodes.get(receiverName).np.deliver(mit);
     }
 
     public void send ( Message message, NetworkConnection sender ) {
         for (Node n : nodes.values()) {
             if (n.nc != sender) {
-                MessageInTransit mit = new MessageInTransit(message, sender.NodeName());
+                MessageInTransit mit = new MessageInTransit(message, sender.nodeName());
                 n.np.deliver(mit);
             }
         }
     }
 
     public MessageInTransit receive(NetworkConnection receiver) throws InterruptedException {
-        return nodes.get(receiver.NodeName()).np.receive();
+        return nodes.get(receiver.nodeName()).np.receive();
     }
 
     public void shutdown() {

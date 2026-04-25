@@ -28,11 +28,11 @@ public class Simulator {
         return instance;
     }
 
-    public void simulate ( long duration_in_seconds ) {
+    public void simulate ( long durationInSeconds ) {
         simulating = true;
         startSignal.countDown();
         try {
-            Thread.sleep(duration_in_seconds * 1000);
+            Thread.sleep(durationInSeconds * 1000);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }

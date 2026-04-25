@@ -8,17 +8,17 @@ public class RandomValues {
         this.distributionFunction = distributionFunction;
     }
 
-    public double getDouble( double min_value, double max_value ) {
+    public double getDouble( double minValue, double maxValue ) {
         double v = distributionFunction.get();
         if (v < 0 || v > 1) {
             throw new IllegalStateException(
                     "Distribution function returned " + v + " — must be in [0, 1]");
         }
-        return min_value + v * (max_value - min_value);
+        return minValue + v * (maxValue - minValue);
     }
 
-    public long getLong ( long min_value, long max_value ) {
-        return (long) getDouble(min_value, max_value);
+    public long getLong ( long minValue, long maxValue ) {
+        return (long) getDouble(minValue, maxValue);
     }
 
     public static Supplier<Double> getUniformDistribution() {

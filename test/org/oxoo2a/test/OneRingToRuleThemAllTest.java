@@ -61,12 +61,12 @@ public class OneRingToRuleThemAllTest {
                 switch (received.message()) {
                     case Token(int v) -> {
                         System.out.printf("Ring segment %s received token %d from %s%n",
-                                          NodeName(), v, received.sender());
+                                          nodeName(), v, received.sender());
                         sleep(500);
                         send(new Token(v + 1), nextId);
                     }
                     case EndMessage e -> {
-                        System.out.printf("Ring segment %s terminating.%n", NodeName());
+                        System.out.printf("Ring segment %s terminating.%n", nodeName());
                         send(e, nextId);
                         return;
                     }

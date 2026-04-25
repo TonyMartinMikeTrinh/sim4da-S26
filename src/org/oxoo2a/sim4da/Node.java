@@ -26,16 +26,16 @@ public class Node {
 
     /**
      * Sends a message to a specific node. If no node is registered under
-     * {@code to_node_name}, the send is silently dropped — keeping the
+     * {@code tonodeName}, the send is silently dropped — keeping the
      * algorithm code in {@link #engage} free of try/catch ceremony.
      * Use {@link #sendChecked} when you want unknown recipients to be
      * surfaced as an exception.
      *
      * @param message the Message object to send.
-     * @param to_node_name the name of the recipient node.
+     * @param tonodeName the name of the recipient node.
      */
-    protected void send ( Message message, String to_node_name ) {
-        nc.send(message, to_node_name);
+    protected void send ( Message message, String tonodeName ) {
+        nc.send(message, tonodeName);
     }
 
     /**
@@ -45,11 +45,11 @@ public class Node {
      * log).
      *
      * @param message the Message object to send.
-     * @param to_node_name the name of the recipient node.
+     * @param tonodeName the name of the recipient node.
      * @throws UnknownNodeException if the destination node is not registered.
      */
-    protected void sendChecked ( Message message, String to_node_name ) throws UnknownNodeException {
-        nc.sendChecked(message, to_node_name);
+    protected void sendChecked ( Message message, String tonodeName ) throws UnknownNodeException {
+        nc.sendChecked(message, tonodeName);
     }
 
 
@@ -76,8 +76,8 @@ public class Node {
      *
      * @return the name of this node.
      */
-    protected String NodeName () {
-        return nc.NodeName();
+    protected String nodeName () {
+        return nc.nodeName();
     }
 
     /**

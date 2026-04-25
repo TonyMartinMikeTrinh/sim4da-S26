@@ -5,21 +5,21 @@ import java.util.function.Supplier;
 public class SimulationBehavior {
 
     // Distribution function for the selection of the next message in a message queue
-    private static RandomValues r_message_queue_selection = null;
-    public static void setMessageQueueSelectionDistributionFunction ( Supplier<Double> df_message_queue_selection ) {
-        if (r_message_queue_selection != null) {
+    private static RandomValues messageQueueSelector = null;
+    public static void setMessageQueueSelectionDistributionFunction ( Supplier<Double> distributionFunction ) {
+        if (messageQueueSelector != null) {
             throw new OverwriteDistributionFunctionException(
                     "Distribution function for message queue selection has already been set");
         }
-        r_message_queue_selection = new RandomValues(df_message_queue_selection);
+        messageQueueSelector = new RandomValues(distributionFunction);
     }
-    public static int selectMessageInQueue ( int queue_size ) {
-        assert(queue_size > 0);
-        if (r_message_queue_selection == null) {
+    public static int selectMessageInQueue ( int queueSize ) {
+        assert(queueSize > 0);
+        if (messageQueueSelector == null) {
             return 0;
         }
         else {
-            return (int) r_message_queue_selection.getLong(0, queue_size-1);
+            return (int) messageQueueSelector.getLong(0, queueSize-1);
         }
     }
 }

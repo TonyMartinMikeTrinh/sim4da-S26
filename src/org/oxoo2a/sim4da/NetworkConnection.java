@@ -16,11 +16,11 @@ public class NetworkConnection {
     /**
      * Initializes the network connection for a node.
      *
-     * @param node_name the unique identifier of the node.
+     * @param nodeName the unique identifier of the node.
      */
-    public NetworkConnection(String node_name ) {
-        this.node_name = node_name;
-        logger = LoggerFactory.getLogger(node_name);
+    public NetworkConnection(String nodeName ) {
+        this.nodeName = nodeName;
+        logger = LoggerFactory.getLogger(nodeName);
         peer = new NodeProxy();
         network.registerConnection(this,peer);
     }
@@ -30,24 +30,24 @@ public class NetworkConnection {
      *
      * @return the node name.
      */
-    public String NodeName () {
-        return node_name;
+    public String nodeName () {
+        return nodeName;
     }
 
     /**
      * Starts the node's main thread after simulation start.
      *
-     * @param node_main the Runnable containing node logic to execute.
+     * @param nodeMain the Runnable containing node logic to execute.
      */
-    public void engage ( Runnable node_main ) {
-        this.node_main = node_main;
-        thread = Thread.ofVirtual().name(node_name).start(this::node_main_base);
+    public void engage ( Runnable nodeMain ) {
+        this.nodeMain = nodeMain;
+        thread = Thread.ofVirtual().name(nodeName).start(this::nodeMainBase);
     }
 
-    private void node_main_base() {
+    private void nodeMainBase() {
         simulator.awaitSimulationStart();
         if (simulator.isSimulating())
-            node_main.run();
+            nodeMain.run();
     }
 
     /**
@@ -84,16 +84,16 @@ public class NetworkConnection {
 
     /**
      * Sends a message to a specific node. If no node is registered under
-     * {@code to_node_name}, the send is silently dropped — keeping
+     * {@code tonodeName}, the send is silently dropped — keeping
      * algorithm code free of try/catch ceremony. Use {@link #sendChecked}
      * when unknown recipients should surface as an exception.
      *
      * @param message the Message to send.
-     * @param to_node_name the recipient node's name.
+     * @param tonodeName the recipient node's name.
      */
-    public void send ( Message message, String to_node_name ) {
+    public void send ( Message message, String tonodeName ) {
         try {
-            sendChecked(message, to_node_name);
+            sendChecked(message, tonodeName);
         }
         catch (UnknownNodeException e) {
             // intentionally swallowed: see sendChecked for the strict variant
@@ -105,12 +105,12 @@ public class NetworkConnection {
      * unknown. The strict counterpart to {@link #send(Message, String)}.
      *
      * @param message the Message to send.
-     * @param to_node_name the recipient node's name.
+     * @param tonodeName the recipient node's name.
      * @throws UnknownNodeException if the target node is not registered.
      */
-    public void sendChecked ( Message message, String to_node_name ) throws UnknownNodeException {
-        logger.debug("Sending message to "+to_node_name);
-        network.send(message, this, to_node_name);
+    public void sendChecked ( Message message, String tonodeName ) throws UnknownNodeException {
+        logger.debug("Sending message to "+tonodeName);
+        network.send(message, this, tonodeName);
     }
 
     /**
@@ -132,13 +132,13 @@ public class NetworkConnection {
         return logger;
     }
 
-    private final String node_name;
+    private final String nodeName;
     private final Simulator simulator = Simulator.getInstance();
     private final Network network = Network.getInstance();
     private Thread thread = null;
     private final NodeProxy peer;
     private final Logger logger;
-    private Runnable node_main = null;
+    private Runnable nodeMain = null;
 
     /**
      * Interrupts the node's main execution thread.
