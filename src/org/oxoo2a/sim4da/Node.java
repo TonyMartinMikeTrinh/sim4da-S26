@@ -20,7 +20,8 @@ package org.oxoo2a.sim4da;
  * <p>If extending {@code Node} does not fit your design — for instance,
  * because your algorithmic class already has a parent — use the HAS-A
  * pattern instead: own a {@link NetworkConnection} directly and engage it
- * with a {@link Runnable}.
+ * with a {@link Runnable}. See {@code NetworkConnection}'s class Javadoc
+ * for the layering discipline that keeps the two patterns at parity.
  */
 public class Node {
 
@@ -44,16 +45,16 @@ public class Node {
 
     /**
      * Sends a message to a specific node. If no node is registered under
-     * {@code tonodeName}, the send is silently dropped — keeping the
+     * {@code toNodeName}, the send is silently dropped — keeping the
      * algorithm code in {@link #engage} free of try/catch ceremony.
      * Use {@link #sendChecked} when you want unknown recipients to be
      * surfaced as an exception.
      *
      * @param message the Message object to send.
-     * @param tonodeName the name of the recipient node.
+     * @param toNodeName the name of the recipient node.
      */
-    protected void send ( Message message, String tonodeName ) {
-        nc.send(message, tonodeName);
+    protected void send ( Message message, String toNodeName ) {
+        nc.send(message, toNodeName);
     }
 
     /**
@@ -63,27 +64,29 @@ public class Node {
      * log).
      *
      * @param message the Message object to send.
-     * @param tonodeName the name of the recipient node.
+     * @param toNodeName the name of the recipient node.
      * @throws UnknownNodeException if the destination node is not registered.
      */
-    protected void sendChecked ( Message message, String tonodeName ) throws UnknownNodeException {
-        nc.sendChecked(message, tonodeName);
+    protected void sendChecked ( Message message, String toNodeName ) throws UnknownNodeException {
+        nc.sendChecked(message, toNodeName);
     }
 
 
     /**
-     * Broadcasts a message to all connected nodes.
+     * Broadcasts a message to all other nodes in the network.
      *
      * @param message the Message object to broadcast.
      */
     protected void broadcast ( Message message ) {
-        nc.send(message);
+        nc.broadcast(message);
     }
 
     /**
-     * Receives the next message from the network. Blocks until a message is available.
+     * Receives the next message from the network. Blocks until a message
+     * is available or the simulation is shut down.
      *
-     * @return the received Message, or null in case of an error (mostly InterruptedException).
+     * @return the next message, or {@code null} if the simulation has been
+     *         shut down.
      */
     protected ReceivedMessage receive () {
         return nc.receive();
@@ -99,16 +102,13 @@ public class Node {
     }
 
     /**
-     * Pauses execution for the specified duration.
+     * Pauses execution for the specified duration. Restores the interrupt
+     * flag if interrupted by simulator shutdown.
      *
      * @param millis the time to sleep in milliseconds.
      */
     protected void sleep ( int millis ) {
-        try {
-            Thread.sleep(millis);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
+        nc.sleep(millis);
     }
     private NetworkConnection nc = null;
 }

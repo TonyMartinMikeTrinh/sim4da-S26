@@ -3,14 +3,18 @@ package org.oxoo2a.sim4da.internal;
 import org.oxoo2a.sim4da.NetworkConnection;
 
 /**
- * The framework-side handle representing the simulated distributed
- * infrastructure as the Actor (the user's algorithm) sees it.
+ * The per-node concentrator for simulation-core capabilities. Every
+ * piece of framework state and behavior that a node should be able to
+ * observe or invoke — the inbox {@link Mailbox} today, the topology
+ * view and the logical clock tomorrow — is held here, on the
+ * {@code NodeProxy} belonging to that node.
  *
- * <p>The Actor interacts with the network via its {@link NetworkConnection};
- * on the other side of the wire, this {@code NodeProxy} is what the
- * {@link Network} delivers to. Today it carries one component — the
- * {@link Mailbox} — and is the natural home for per-node infrastructure
- * yet to come (topology view, logical clock, scheduling hooks).
+ * <p>{@link NetworkConnection} is the user-facing handle and surfaces
+ * what {@code NodeProxy} carries; {@link org.oxoo2a.sim4da.Node Node}
+ * is a thin facade over {@code NetworkConnection}. Adding a new
+ * simulation-core feature follows that path: land it on
+ * {@code NodeProxy}, expose it on {@code NetworkConnection}, mirror it
+ * on {@code Node}.
  */
 public class NodeProxy {
 

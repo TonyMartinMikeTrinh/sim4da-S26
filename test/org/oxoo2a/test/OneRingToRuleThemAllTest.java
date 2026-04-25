@@ -34,12 +34,7 @@ public class OneRingToRuleThemAllTest {
 
         private void run() {
             nc.send(new Token(0), "0");
-            try {
-                Thread.sleep(waitMillis);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                return;
-            }
+            nc.sleep(waitMillis);
             nc.send(new EndMessage(), "0");
         }
     }

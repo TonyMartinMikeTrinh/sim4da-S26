@@ -7,8 +7,25 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Represents a network connection for a simulation node.
- * Manages sending, receiving messages, and thread lifecycle.
+ * The user-facing handle into the simulation as the running algorithm
+ * sees it (the HAS-A pattern). Surfaces every per-node capability that
+ * {@link NodeProxy} concentrates from the simulation core, plus a small
+ * set of connection-local concerns (the logger, the thread lifecycle,
+ * the node's name).
+ *
+ * <p>{@link Node} is a thin facade over this class — every method on
+ * {@code Node} is a protected delegate to a corresponding public method
+ * here. The discipline:
+ *
+ * <ol>
+ *   <li>A new simulation-core capability lands first on {@link NodeProxy}.</li>
+ *   <li>It is then surfaced here as a public method.</li>
+ *   <li>It is mirrored on {@link Node} as a protected delegate.</li>
+ * </ol>
+ *
+ * That keeps the IS-A and HAS-A patterns at parity, so the choice
+ * between them is purely stylistic — it never changes what the algorithm
+ * can do.
  */
 public class NetworkConnection {
 
@@ -84,16 +101,16 @@ public class NetworkConnection {
 
     /**
      * Sends a message to a specific node. If no node is registered under
-     * {@code tonodeName}, the send is silently dropped — keeping
+     * {@code toNodeName}, the send is silently dropped — keeping
      * algorithm code free of try/catch ceremony. Use {@link #sendChecked}
      * when unknown recipients should surface as an exception.
      *
      * @param message the Message to send.
-     * @param tonodeName the recipient node's name.
+     * @param toNodeName the recipient node's name.
      */
-    public void send ( Message message, String tonodeName ) {
+    public void send ( Message message, String toNodeName ) {
         try {
-            sendChecked(message, tonodeName);
+            sendChecked(message, toNodeName);
         }
         catch (UnknownNodeException e) {
             // intentionally swallowed: see sendChecked for the strict variant
@@ -105,22 +122,39 @@ public class NetworkConnection {
      * unknown. The strict counterpart to {@link #send(Message, String)}.
      *
      * @param message the Message to send.
-     * @param tonodeName the recipient node's name.
+     * @param toNodeName the recipient node's name.
      * @throws UnknownNodeException if the target node is not registered.
      */
-    public void sendChecked ( Message message, String tonodeName ) throws UnknownNodeException {
-        logger.debug("Sending message to "+tonodeName);
-        network.send(message, this, tonodeName);
+    public void sendChecked ( Message message, String toNodeName ) throws UnknownNodeException {
+        logger.debug("Sending message to "+toNodeName);
+        network.send(message, this, toNodeName);
     }
 
     /**
-     * Broadcasts a message to all nodes in the network.
+     * Broadcasts a message to all other nodes in the network. There is no
+     * checked counterpart — broadcast has no specific recipient that could
+     * be unknown.
      *
      * @param message the Message to broadcast.
      */
-    public void send ( Message message ) {
+    public void broadcast ( Message message ) {
         logger.debug("Broadcasting message");
         network.send(message, this);
+    }
+
+    /**
+     * Pauses execution for the given duration. Restores the thread's
+     * interrupt flag if interrupted (typically by simulator shutdown), so
+     * subsequent blocking calls exit promptly.
+     *
+     * @param millis the time to sleep in milliseconds.
+     */
+    public void sleep ( int millis ) {
+        try {
+            Thread.sleep(millis);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
     }
 
     /**
