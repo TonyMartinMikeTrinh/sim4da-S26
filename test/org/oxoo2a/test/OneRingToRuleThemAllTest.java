@@ -33,14 +33,14 @@ public class OneRingToRuleThemAllTest {
         }
 
         private void run() {
-            nc.sendBlindly(new Token(0), "0");
+            nc.send(new Token(0), "0");
             try {
                 Thread.sleep(waitMillis);
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 return;
             }
-            nc.sendBlindly(new EndMessage(), "0");
+            nc.send(new EndMessage(), "0");
         }
     }
 
@@ -63,11 +63,11 @@ public class OneRingToRuleThemAllTest {
                         System.out.printf("Ring segment %s received token %d from %s%n",
                                           NodeName(), v, received.sender());
                         sleep(500);
-                        sendBlindly(new Token(v + 1), nextId);
+                        send(new Token(v + 1), nextId);
                     }
                     case EndMessage e -> {
                         System.out.printf("Ring segment %s terminating.%n", NodeName());
-                        sendBlindly(e, nextId);
+                        send(e, nextId);
                         return;
                     }
                     default -> throw new IllegalStateException(

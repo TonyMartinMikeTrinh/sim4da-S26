@@ -25,24 +25,31 @@ public class Node {
     }
 
     /**
-     * Sends a message to a specific node, with error handling.
+     * Sends a message to a specific node. If no node is registered under
+     * {@code to_node_name}, the send is silently dropped — keeping the
+     * algorithm code in {@link #engage} free of try/catch ceremony.
+     * Use {@link #sendChecked} when you want unknown recipients to be
+     * surfaced as an exception.
      *
      * @param message the Message object to send.
      * @param to_node_name the name of the recipient node.
-     * @throws UnknownNodeException if the destination node is not recognized.
      */
-    protected void send ( Message message, String to_node_name ) throws UnknownNodeException {
+    protected void send ( Message message, String to_node_name ) {
         nc.send(message, to_node_name);
     }
 
     /**
-     * Sends a message to a specific node without throwing if the node is unknown.
+     * Sends a message to a specific node, throwing if the recipient is
+     * unknown. The strict counterpart to {@link #send}; use this when the
+     * algorithm needs to react to a missing recipient (e.g. to retry or to
+     * log).
      *
      * @param message the Message object to send.
      * @param to_node_name the name of the recipient node.
+     * @throws UnknownNodeException if the destination node is not registered.
      */
-    protected void sendBlindly ( Message message, String to_node_name ) {
-        nc.sendBlindly(message, to_node_name);
+    protected void sendChecked ( Message message, String to_node_name ) throws UnknownNodeException {
+        nc.sendChecked(message, to_node_name);
     }
 
 

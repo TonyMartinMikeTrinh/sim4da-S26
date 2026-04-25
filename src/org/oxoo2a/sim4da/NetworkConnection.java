@@ -83,28 +83,34 @@ public class NetworkConnection {
     }
 
     /**
-     * Sends a message to a specified node with error reporting.
+     * Sends a message to a specific node. If no node is registered under
+     * {@code to_node_name}, the send is silently dropped — keeping
+     * algorithm code free of try/catch ceremony. Use {@link #sendChecked}
+     * when unknown recipients should surface as an exception.
+     *
+     * @param message the Message to send.
+     * @param to_node_name the recipient node's name.
+     */
+    public void send ( Message message, String to_node_name ) {
+        try {
+            sendChecked(message, to_node_name);
+        }
+        catch (UnknownNodeException e) {
+            // intentionally swallowed: see sendChecked for the strict variant
+        }
+    }
+
+    /**
+     * Sends a message to a specific node, throwing if the recipient is
+     * unknown. The strict counterpart to {@link #send(Message, String)}.
      *
      * @param message the Message to send.
      * @param to_node_name the recipient node's name.
      * @throws UnknownNodeException if the target node is not registered.
      */
-    public void send ( Message message, String to_node_name ) throws UnknownNodeException {
+    public void sendChecked ( Message message, String to_node_name ) throws UnknownNodeException {
         logger.debug("Sending message to "+to_node_name);
         network.send(message, this, to_node_name);
-    }
-
-    /**
-     * Sends a message to a node, suppressing unknown node errors.
-     *
-     * @param message the Message to send.
-     * @param to_node_name the recipient node's name.
-     */
-    public void sendBlindly ( Message message, String to_node_name ) {
-        try {
-            send(message, to_node_name);
-        }
-        catch (Exception e) {}
     }
 
     /**

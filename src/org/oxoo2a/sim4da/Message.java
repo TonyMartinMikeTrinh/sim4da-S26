@@ -22,7 +22,7 @@ package org.oxoo2a.sim4da;
  *       loop looks like this:
  *       <pre>{@code
  *           switch (receive().message()) {
- *               case Token(int v)   -> sendBlindly(new Token(v + 1), nextId);
+ *               case Token(int v)   -> send(new Token(v + 1), nextId);
  *               case EndMessage e   -> { ...; running = false; }
  *               default             -> throw new IllegalStateException(...);
  *           }
@@ -46,7 +46,7 @@ package org.oxoo2a.sim4da;
  *     record Snapshot(List<Integer> values) implements Message {}
  *
  *     List<Integer> backing = new ArrayList<>(List.of(1, 2, 3));
- *     sendBlindly(new Snapshot(backing), "neighbor");
+ *     send(new Snapshot(backing), "neighbor");
  *     backing.add(4);   // the receiver's snapshot now reads 4 elements
  * }</pre>
  *
