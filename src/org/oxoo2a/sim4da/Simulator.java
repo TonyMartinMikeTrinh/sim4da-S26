@@ -34,7 +34,7 @@ public class Simulator {
         try {
             Thread.sleep(duration_in_seconds * 1000);
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            Thread.currentThread().interrupt();
         }
         simulating = false;
         List<NetworkConnection> ncs = Network.getInstance().getAllNetworkConnections();
@@ -72,6 +72,8 @@ public class Simulator {
         try {
             startSignal.await();
         }
-        catch (InterruptedException e) {}
+        catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
     }
 }

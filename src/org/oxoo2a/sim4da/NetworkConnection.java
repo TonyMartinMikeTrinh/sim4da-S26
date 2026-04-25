@@ -21,7 +21,7 @@ public class NetworkConnection {
     public NetworkConnection(String node_name ) {
         this.node_name = node_name;
         logger = LoggerFactory.getLogger(node_name);
-        peer = new NodeProxy(this);
+        peer = new NodeProxy();
         network.registerConnection(this,peer);
     }
 
@@ -57,19 +57,29 @@ public class NetworkConnection {
         try {
             thread.join();
         }
-        catch (InterruptedException e) {}
+        catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
     }
 
     /**
-     * Receives the next message from the network.
+     * Receives the next message from the network. Blocks until a message
+     * is available or the simulation is shut down.
      *
-     * @return the received Message as a ReceivedMessage record.
+     * @return the next message, or {@code null} if the simulation has been
+     *         shut down (the thread's interrupt flag is restored before
+     *         returning, so subsequent blocking calls will exit promptly).
      */
     public ReceivedMessage receive () {
-        MessageInTransit mit = network.receive(this);
-        logger.debug("Received message from "+mit.sender());
-        ReceivedMessage rm = new ReceivedMessage(mit.message(), mit.sender());
-        return rm;
+        try {
+            MessageInTransit mit = network.receive(this);
+            logger.debug("Received message from "+mit.sender());
+            return new ReceivedMessage(mit.message(), mit.sender());
+        }
+        catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            return null;
+        }
     }
 
     /**

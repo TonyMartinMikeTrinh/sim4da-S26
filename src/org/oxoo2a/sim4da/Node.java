@@ -82,6 +82,7 @@ public class Node {
         try {
             Thread.sleep(millis);
         } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
         }
     }
     private NetworkConnection nc = null;

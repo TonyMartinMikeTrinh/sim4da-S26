@@ -55,9 +55,9 @@ public class OneRingToRuleThemAllTest {
 
         @Override
         protected void engage() {
-            boolean running = true;
-            while (running) {
+            while (true) {
                 ReceivedMessage received = receive();
+                if (received == null) return;       // simulation has been shut down
                 switch (received.message()) {
                     case Token(int v) -> {
                         System.out.printf("Ring segment %s received token %d from %s%n",
@@ -68,7 +68,7 @@ public class OneRingToRuleThemAllTest {
                     case EndMessage e -> {
                         System.out.printf("Ring segment %s terminating.%n", NodeName());
                         sendBlindly(e, nextId);
-                        running = false;
+                        return;
                     }
                     default -> throw new IllegalStateException(
                             "Unexpected message: " + received.message());

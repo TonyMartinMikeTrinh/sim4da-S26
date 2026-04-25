@@ -1,43 +1,26 @@
 package org.oxoo2a.sim4da.internal;
 
-import org.oxoo2a.sim4da.Message;
-import org.oxoo2a.sim4da.internal.MessageInTransit;
 import org.oxoo2a.sim4da.NetworkConnection;
-import org.oxoo2a.sim4da.SimulationBehavior;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
+/**
+ * The framework-side handle representing the simulated distributed
+ * infrastructure as the Actor (the user's algorithm) sees it.
+ *
+ * <p>The Actor interacts with the network via its {@link NetworkConnection};
+ * on the other side of the wire, this {@code NodeProxy} is what the
+ * {@link Network} delivers to. Today it carries one component — the
+ * {@link Mailbox} — and is the natural home for per-node infrastructure
+ * yet to come (topology view, logical clock, scheduling hooks).
+ */
 public class NodeProxy {
-    public NodeProxy ( NetworkConnection nc ) {
-        this.nc = nc;
+
+    private final Mailbox mailbox = new Mailbox();
+
+    public void deliver(MessageInTransit mit) {
+        mailbox.put(mit);
     }
 
-    public void deliver (MessageInTransit mit, NetworkConnection sender ) {
-        synchronized (messages) {
-            messages.add(new ReceivedMessage(mit, sender));
-            messages.notify();
-        }
+    public MessageInTransit receive() throws InterruptedException {
+        return mailbox.take();
     }
-
-    public MessageInTransit receive () {
-        synchronized (messages) {
-            while (messages.isEmpty()) {
-                try {
-                    messages.wait();
-                } catch (InterruptedException e) {
-                    // TODO Signal associated NetworkConnection that the simulation is shutting down
-                    e.printStackTrace();
-                }
-            }
-            int candidate_index = SimulationBehavior.selectMessageInQueue(messages.size());
-            ReceivedMessage candidate = messages.remove(candidate_index);
-            return candidate.mit;
-        }
-    }
-    private record ReceivedMessage ( MessageInTransit mit, NetworkConnection sender ) {};
-
-    private final List<ReceivedMessage> messages = Collections.synchronizedList(new ArrayList<>());
-    private final NetworkConnection nc;
 }

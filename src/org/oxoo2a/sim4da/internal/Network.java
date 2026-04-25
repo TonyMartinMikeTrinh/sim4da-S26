@@ -55,23 +55,20 @@ public class Network {
             throw new UnknownNodeException(receiver_name);
         }
         MessageInTransit mit = new MessageInTransit(message, sender.NodeName());
-        NodeProxy receiver = nodes.get(receiver_name).np;
-        receiver.deliver(mit, sender);
+        nodes.get(receiver_name).np.deliver(mit);
     }
 
     public void send ( Message message, NetworkConnection sender ) {
         for (Node n : nodes.values()) {
             if (n.nc != sender) {
                 MessageInTransit mit = new MessageInTransit(message, sender.NodeName());
-                n.np.deliver(mit, sender);
+                n.np.deliver(mit);
             }
         }
     }
 
-    public MessageInTransit receive(NetworkConnection receiver) {
-        Node n = nodes.get(receiver.NodeName());
-        MessageInTransit mit = n.np.receive();
-        return mit;
+    public MessageInTransit receive(NetworkConnection receiver) throws InterruptedException {
+        return nodes.get(receiver.NodeName()).np.receive();
     }
 
     public void shutdown() {
