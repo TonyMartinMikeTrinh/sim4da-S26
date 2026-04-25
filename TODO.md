@@ -64,10 +64,6 @@ naturally lives on `NodeProxy` because each node has its own clock.
 
 ## Mechanical cleanup (when convenient)
 
-- **`module-info.java` rework.** Currently passive in tests
-  (modularity inference disabled in `build.gradle.kts`). Revisit once
-  `Topology` and `BellTower` settle the package layout — module
-  declarations are easiest to write last, when exports won't move.
 - **`stash/` deletion or revival.** The files in `stash/` reference an
   old key/value Message API; they don't compile against the current
   framework. Either delete outright, or restore that API as a
