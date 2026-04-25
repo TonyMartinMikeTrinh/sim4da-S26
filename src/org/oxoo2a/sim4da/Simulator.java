@@ -89,13 +89,31 @@ public class Simulator {
     }
 
     /**
-     * Requests an immediate end to the simulation. Safe to call from any
-     * thread — including from inside an Actor's {@code engage()} loop.
-     * Every node's {@link Node#receive() receive} returns {@code null}, the
-     * timeout in {@link #simulate(long)} is short-circuited, and the
-     * matching {@code simulate*} method returns once all nodes have exited.
+     * Requests an immediate end to the simulation. Must be called from
+     * <em>outside</em> the simulation — the test thread, or an external
+     * scheduler — never from inside an Actor's {@code engage()} loop. A
+     * real distributed system cannot be stopped by one node; termination
+     * must propagate via messages (token rings, Dijkstra-Scholten, leader
+     * election) or come from an external trigger such as a timeout. This
+     * method enforces that constraint by failing fast when invoked from a
+     * registered node thread.
+     *
+     * <p>Effect: every node's {@link Node#receive() receive} returns
+     * {@code null}, the timeout in {@link #simulate(long)} is short-
+     * circuited, and the matching {@code simulate*} method returns once
+     * all nodes have exited.
+     *
+     * @throws IllegalStateException if called from a node thread.
      */
     public void stop() {
+        if (Network.getInstance().isCurrentThreadANode()) {
+            throw new IllegalStateException(
+                    "Simulator.stop() must not be called from inside a node — " +
+                    "a distributed system cannot be stopped by one node. " +
+                    "Use simulate(durationInSeconds) for a time-bounded run, " +
+                    "or propagate termination through messages between nodes " +
+                    "(see OneRingToRuleThemAllTest for a token-passing example).");
+        }
         simulating = false;
         stopSignal.countDown();
         for (NetworkConnection nc : Network.getInstance().getAllNetworkConnections()) {

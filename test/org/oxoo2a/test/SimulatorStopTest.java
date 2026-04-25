@@ -6,23 +6,34 @@ import org.oxoo2a.sim4da.Node;
 import org.oxoo2a.sim4da.ReceivedMessage;
 import org.oxoo2a.sim4da.Simulator;
 
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * Verifies that {@link Simulator#stop()} can be called from inside an
- * Actor's {@code engage()} loop and that the simulation terminates
- * promptly even if some nodes are blocked in {@code receive()} with no
- * incoming messages.
+ * Two complementary checks on {@link Simulator#stop()}:
+ *
+ * <ol>
+ *   <li>Called from outside the simulation, it ends a node that would
+ *       otherwise block in {@code receive()} forever.</li>
+ *   <li>Called from inside an Actor's {@code engage()} loop, it fails
+ *       fast — a real distributed system cannot be stopped by one node;
+ *       termination must propagate via messages or come from an external
+ *       trigger.</li>
+ * </ol>
  */
 class SimulatorStopTest {
 
     @Test
     @Timeout(5)
-    void stopShortCircuitsAnIndefinitelyBlockedNode() {
+    void stopFromOutsideEndsBlockedNodes() {
         Simulator simulator = Simulator.getInstance();
 
         AtomicReference<ReceivedMessage> receivedAfterStop = new AtomicReference<>();
@@ -38,21 +49,46 @@ class SimulatorStopTest {
             }
         };
 
-        // Triggers stop() shortly after the simulation begins.
-        new Node("trigger") {
+        // Trigger stop() from an external scheduler — never from a node.
+        ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
+        try {
+            scheduler.schedule(simulator::stop, 100, TimeUnit.MILLISECONDS);
+            simulator.simulate();
+        } finally {
+            scheduler.shutdownNow();
+            simulator.shutdown();
+        }
+
+        assertTrue(listenerReturned.get(),
+                "listener's engage() must return once stop() is called");
+        assertNull(receivedAfterStop.get(),
+                "receive() must return null after stop()");
+    }
+
+    @Test
+    @Timeout(5)
+    void stopFromInsideAnEngageLoopThrows() {
+        Simulator simulator = Simulator.getInstance();
+        AtomicReference<Throwable> caught = new AtomicReference<>();
+
+        // A node that misuses the API by trying to stop the simulation
+        // from inside its own engage() — the framework must fail fast.
+        new Node("violator") {
             @Override
             protected void engage() {
-                sleep(100);
-                Simulator.getInstance().stop();
+                try {
+                    simulator.stop();
+                } catch (Throwable t) {
+                    caught.set(t);
+                }
             }
         };
 
         simulator.simulate();
         simulator.shutdown();
 
-        assertTrue(listenerReturned.get(),
-                "listener's engage() must return once stop() is called");
-        assertNull(receivedAfterStop.get(),
-                "receive() must return null after stop()");
+        Throwable t = caught.get();
+        assertNotNull(t, "stop() must throw when called from a node thread");
+        assertInstanceOf(IllegalStateException.class, t);
     }
 }

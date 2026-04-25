@@ -49,6 +49,17 @@ public class Network {
         return nodes.size();
     }
 
+    /**
+     * True if the calling thread is one of the registered node threads.
+     * Used to enforce that simulation-control methods (like stop) are not
+     * called from inside an Actor's engage loop — a real distributed
+     * system cannot be stopped by one node, only by message-based
+     * propagation or by an external trigger.
+     */
+    public boolean isCurrentThreadANode() {
+        return nodes.containsKey(Thread.currentThread().getName());
+    }
+
     public void send (Message message, NetworkConnection sender, String receiverName ) throws UnknownNodeException {
         if (!nodes.containsKey(receiverName)) {
             logger.error("Attempt to send message to non-existent node " + receiverName);
