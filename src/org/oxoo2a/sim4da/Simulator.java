@@ -35,11 +35,30 @@ public class Simulator {
     private final AtomicLong simulatorSeq = new AtomicLong();
     private  Simulator () {
         System.out.println(version);
-        log(version + " - simulation started.");
     }
 
     private void log(String event) {
         EventLog.getInstance().record("Simulator", simulatorSeq.incrementAndGet(), event);
+    }
+
+    /**
+     * Suppress all log-file output for the upcoming simulation. The log
+     * file is opened lazily on the first non-silent event, so calling
+     * this before any node is created (or {@code simulate} runs)
+     * produces a fully silent run — no file at all. The setting is
+     * cleared by {@link #shutdown}.
+     */
+    public void disableLogging() {
+        EventLog.getInstance().setSilent(true);
+    }
+
+    /**
+     * Re-enable log-file output if it was previously disabled via
+     * {@link #disableLogging}. {@link #shutdown} also restores logging
+     * for the next simulation.
+     */
+    public void enableLogging() {
+        EventLog.getInstance().setSilent(false);
     }
 
     public static Simulator getInstance() {
@@ -59,6 +78,7 @@ public class Simulator {
      * Returns once all node threads have terminated.
      */
     public void simulate ( long durationInSeconds ) {
+        log(version + " - simulation started.");
         simulating = true;
         startSignal.countDown();
         try {
@@ -84,6 +104,7 @@ public class Simulator {
      * outside the simulation called {@link #stop()}.
      */
     public void simulate () {
+        log(version + " - simulation started.");
         simulating = true;
         startSignal.countDown();
         List<NetworkConnection> ncs = Network.getInstance().getAllNetworkConnections();
@@ -138,6 +159,8 @@ public class Simulator {
         stopSignal = new CountDownLatch(1);
         simulating = false;
         log(version + " - simulation ended.");
+        simulatorSeq.set(0);
+        EventLog.getInstance().setSilent(false);
     }
 
     public boolean isSimulating() {

@@ -28,7 +28,11 @@ import java.nio.file.StandardOpenOption;
  * has to reason in a real distributed system.
  *
  * <p>Output goes to {@code sim4da-<PID>.log} in the working directory.
- * The implementation deliberately does not pull in SLF4J / Logback or
+ * The file is opened lazily on the first non-silent {@link #record}
+ * call — so a simulation run with logging disabled (see
+ * {@code Simulator.disableLogging()}) creates no file at all.
+ *
+ * <p>The implementation deliberately does not pull in SLF4J / Logback or
  * any other logging framework — sim4da's needs are simple enough that
  * adding one would be using a sledgehammer to crack a nut, and a
  * dependency-free framework distributes as a single, standalone JAR.
@@ -42,13 +46,39 @@ public final class EventLog {
         return instance;
     }
 
-    private final PrintWriter writer;
+    private boolean silent = false;
+    private PrintWriter writer;     // lazily opened on first non-silent record
 
-    private EventLog() {
+    private EventLog() { }
+
+    /**
+     * Toggle whether {@link #record} writes to the log file. When
+     * {@code silent} is {@code true} every {@code record} call is a
+     * no-op, and if the log file has not yet been opened, it never will
+     * be — a fully silent run produces no file at all.
+     */
+    public void setSilent(boolean silent) {
+        this.silent = silent;
+    }
+
+    /**
+     * Append one event to the log. The caller supplies its own per-source
+     * sequence number. Synchronized so that the lazy file-open is
+     * race-free; {@link PrintWriter#println(String)} would be thread-safe
+     * on its own, but the writer field's first assignment is what needs
+     * the lock.
+     */
+    public synchronized void record(String source, long seq, String event) {
+        if (silent) return;
+        if (writer == null) openFile();
+        writer.println("[" + source + "," + seq + "] " + event);
+    }
+
+    private void openFile() {
         long pid = ProcessHandle.current().pid();
         Path file = Path.of("sim4da-" + pid + ".log");
         try {
-            this.writer = new PrintWriter(
+            writer = new PrintWriter(
                     Files.newBufferedWriter(file,
                             StandardOpenOption.CREATE,
                             StandardOpenOption.APPEND),
@@ -56,15 +86,5 @@ public final class EventLog {
         } catch (IOException e) {
             throw new RuntimeException("Cannot open log file " + file, e);
         }
-    }
-
-    /**
-     * Append one event to the log. The caller supplies its own per-source
-     * sequence number. {@link PrintWriter#println(String)} is synchronized
-     * internally, so concurrent callers each produce a complete line —
-     * never interleaved characters.
-     */
-    public void record(String source, long seq, String event) {
-        writer.println("[" + source + "," + seq + "] " + event);
     }
 }

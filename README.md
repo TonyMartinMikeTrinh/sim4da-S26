@@ -163,6 +163,18 @@ SLF4J, Logback, or any other logging framework. sim4da's logging needs
 are simple enough that a dependency-free implementation is the right
 fit, and it lets the framework distribute as a single, standalone JAR.
 
+To run a simulation without producing a log file at all (smoke tests,
+performance experiments, anything where the file is just clutter):
+
+```java
+Simulator simulator = Simulator.getInstance();
+simulator.disableLogging();    // call before creating nodes
+// ... build the simulation, run, shut down ...
+```
+
+`disableLogging()` is reset by `shutdown()`, so a JUnit suite where
+one test runs silently and the next runs loud just works.
+
 ## Modern Java in use
 
 The framework leans on Java 21+ language features as a matter of design:
