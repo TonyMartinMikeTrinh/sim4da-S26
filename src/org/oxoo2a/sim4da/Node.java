@@ -37,10 +37,11 @@ public class Node {
 
     /**
      * Called when the network connection engages this node.
-     * Default implementation logs a debug message; override to define custom behavior.
+     * Default implementation logs a no-op marker; override to define
+     * custom behavior.
      */
     protected void engage () {
-        nc.getLogger().debug("Engaging node, but no code defined");
+        nc.log("engaged, but no algorithm defined");
     }
 
     /**
@@ -109,6 +110,14 @@ public class Node {
      */
     protected void sleep ( int millis ) {
         nc.sleep(millis);
+    }
+
+    /**
+     * Records one event to the framework's log file. See
+     * {@link NetworkConnection#log}.
+     */
+    protected void log ( String event ) {
+        nc.log(event);
     }
     private NetworkConnection nc = null;
 }

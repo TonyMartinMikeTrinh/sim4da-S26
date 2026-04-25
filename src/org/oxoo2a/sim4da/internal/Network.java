@@ -3,8 +3,6 @@ package org.oxoo2a.sim4da.internal;
 import org.oxoo2a.sim4da.Message;
 import org.oxoo2a.sim4da.NetworkConnection;
 import org.oxoo2a.sim4da.UnknownNodeException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,7 +16,6 @@ public class Network {
 
     private record Node (NetworkConnection nc, NodeProxy np ) {}
     private final Map<String,Node> nodes = new HashMap<>();
-    private final Logger logger = LoggerFactory.getLogger(Network.class);
     private static Network instance = null;
     public static Network getInstance() {
         if (instance == null) {
@@ -32,7 +29,7 @@ public class Network {
     }
 
     public void registerConnection(NetworkConnection networkConnection, NodeProxy nodeProxy) {
-        logger.debug("Registering connection for " + networkConnection.nodeName());
+        EventLog.getInstance().record(networkConnection.nodeName(), "registered with the network");
         Node n = new Node(networkConnection, nodeProxy);
         nodes.put(networkConnection.nodeName(), n);
     }
@@ -62,7 +59,8 @@ public class Network {
 
     public void send (Message message, NetworkConnection sender, String receiverName ) throws UnknownNodeException {
         if (!nodes.containsKey(receiverName)) {
-            logger.error("Attempt to send message to non-existent node " + receiverName);
+            EventLog.getInstance().record(sender.nodeName(),
+                    "attempted send to non-existent node " + receiverName);
             throw new UnknownNodeException(receiverName);
         }
         MessageInTransit mit = new MessageInTransit(message, sender.nodeName());

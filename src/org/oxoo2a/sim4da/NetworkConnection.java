@@ -1,17 +1,16 @@
 package org.oxoo2a.sim4da;
 
+import org.oxoo2a.sim4da.internal.EventLog;
 import org.oxoo2a.sim4da.internal.MessageInTransit;
 import org.oxoo2a.sim4da.internal.Network;
 import org.oxoo2a.sim4da.internal.NodeProxy;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * The user-facing handle into the simulation as the running algorithm
  * sees it (the HAS-A pattern). Surfaces every per-node capability that
  * {@link NodeProxy} concentrates from the simulation core, plus a small
- * set of connection-local concerns (the logger, the thread lifecycle,
- * the node's name).
+ * set of connection-local concerns (the thread lifecycle, the node's
+ * name, recording events to the log).
  *
  * <p>{@link Node} is a thin facade over this class — every method on
  * {@code Node} is a protected delegate to a corresponding public method
@@ -37,7 +36,6 @@ public class NetworkConnection {
      */
     public NetworkConnection(String nodeName ) {
         this.nodeName = nodeName;
-        logger = LoggerFactory.getLogger(nodeName);
         peer = new NodeProxy();
         network.registerConnection(this,peer);
     }
@@ -90,7 +88,7 @@ public class NetworkConnection {
     public ReceivedMessage receive () {
         try {
             MessageInTransit mit = network.receive(this);
-            logger.debug("Received message from "+mit.sender());
+            log("received from " + mit.sender());
             return new ReceivedMessage(mit.message(), mit.sender());
         }
         catch (InterruptedException e) {
@@ -126,7 +124,7 @@ public class NetworkConnection {
      * @throws UnknownNodeException if the target node is not registered.
      */
     public void sendChecked ( Message message, String toNodeName ) throws UnknownNodeException {
-        logger.debug("Sending message to "+toNodeName);
+        log("sending to " + toNodeName);
         network.send(message, this, toNodeName);
     }
 
@@ -138,7 +136,7 @@ public class NetworkConnection {
      * @param message the Message to broadcast.
      */
     public void broadcast ( Message message ) {
-        logger.debug("Broadcasting message");
+        log("broadcasting");
         network.send(message, this);
     }
 
@@ -158,12 +156,15 @@ public class NetworkConnection {
     }
 
     /**
-     * Provides access to the logger for this connection.
-     *
-     * @return the SLF4J Logger instance.
+     * Records one event to the framework's log file
+     * ({@code sim4da-<PID>.log}). The line is tagged with this node's
+     * name and an ISO-8601 timestamp; calls from one node appear in the
+     * order they were made (each node runs on its own thread). Useful
+     * for algorithm-level events the student wants to inspect after a
+     * simulation run.
      */
-    public Logger getLogger() {
-        return logger;
+    public void log(String event) {
+        EventLog.getInstance().record(nodeName, event);
     }
 
     private final String nodeName;
@@ -171,7 +172,6 @@ public class NetworkConnection {
     private final Network network = Network.getInstance();
     private Thread thread = null;
     private final NodeProxy peer;
-    private final Logger logger;
     private Runnable nodeMain = null;
 
     /**

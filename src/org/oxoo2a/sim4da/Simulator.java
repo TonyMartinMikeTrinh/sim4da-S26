@@ -1,9 +1,7 @@
 package org.oxoo2a.sim4da;
 
+import org.oxoo2a.sim4da.internal.EventLog;
 import org.oxoo2a.sim4da.internal.Network;
-import org.oxoo2a.sim4da.internal.sim4da;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
@@ -23,19 +21,19 @@ import java.util.concurrent.TimeUnit;
  *     simulator.shutdown();          // resets framework state for the next run
  * }</pre>
  *
- * <p>Any node can call {@link #stop()} from inside {@code engage()} to end
- * the simulation early — useful for algorithm-driven termination
- * (leader-election success, snapshot complete, Dijkstra-Scholten quiescence).
+ * <p>{@link #stop()} ends the simulation early but must be called from
+ * <em>outside</em> the simulation — the test thread or an external
+ * scheduler — never from inside an Actor's {@code engage()} loop. A
+ * real distributed system cannot be stopped by one node; termination
+ * has to propagate via messages or arrive from an external trigger.
  * {@link #shutdown()} resets all framework state, so a JUnit suite that
  * runs many tests in the same JVM remains independent.
  */
 public class Simulator {
     private final String version = "sim4da Summer 2025";
     private  Simulator () {
-        System.setProperty("PID", String.valueOf(ProcessHandle.current().pid())); // Needed for logback
-        logger = LoggerFactory.getLogger(sim4da.class);
         System.out.println(version);
-        logger.info(version + " - Simulation started.");
+        EventLog.getInstance().record("Simulator", version + " - simulation started.");
     }
 
     public static Simulator getInstance() {
@@ -76,8 +74,8 @@ public class Simulator {
 
     /**
      * Runs the simulation until every node terminates on its own — either
-     * by returning from {@code engage()} naturally, or because some node
-     * called {@link #stop()}.
+     * by returning from {@code engage()} naturally, or because something
+     * outside the simulation called {@link #stop()}.
      */
     public void simulate () {
         simulating = true;
@@ -133,14 +131,13 @@ public class Simulator {
         startSignal = new CountDownLatch(1);
         stopSignal = new CountDownLatch(1);
         simulating = false;
-        logger.info(version + " - Simulation ended.");
+        EventLog.getInstance().record("Simulator", version + " - simulation ended.");
     }
 
     public boolean isSimulating() {
         return simulating;
     }
     private static Simulator instance = null;
-    private final Logger logger;
     private volatile boolean simulating = false;
     private CountDownLatch startSignal = new CountDownLatch(1);
     private CountDownLatch stopSignal = new CountDownLatch(1);

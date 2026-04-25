@@ -133,13 +133,31 @@ enforces this: a node thread that calls `stop()` gets an
 
 ## Logging
 
-A default `logback.xml` on the classpath writes DEBUG-level logs to
-`sim4da-<PID>.log` so every send and every receive shows up. Each node's
-logger is named after the node, and virtual threads carry the same name —
-so `[%thread]` in your appender pattern is enough to see who logged what.
+Every send, receive, broadcast, and any algorithm-level event you record
+yourself appears as one line in `sim4da-<PID>.log` in the working
+directory. Format:
 
-To customize, place your own `logback.xml` on the classpath ahead of the
-default.
+```
+2026-04-25T18:08:42.540234Z [0] sending to 1
+2026-04-25T18:08:42.540496Z [1] received from 0
+```
+
+Calls from one node appear in the order they were made (each node runs
+on its own thread); cross-node order is whatever the JVM scheduler
+produced — which for an event-driven simulator *is* the timeline. The
+log is meant to be read after the run, to investigate liveness, safety,
+and ordering properties of your algorithm.
+
+To record an event from inside `engage()`:
+
+```java
+log("round " + r + " complete");
+```
+
+The implementation lives in `internal.EventLog` — it does not pull in
+SLF4J, Logback, or any other logging framework. sim4da's logging needs
+are simple enough that a dependency-free implementation is the right
+fit, and it lets the framework distribute as a single, standalone JAR.
 
 ## Modern Java in use
 
@@ -155,6 +173,9 @@ The framework leans on Java 21+ language features as a matter of design:
   `org.oxoo2a.sim4da.internal` deliberately hidden. Student code cannot
   import the simulation core — `import org.oxoo2a.sim4da.internal.Network;`
   is a compile error rather than a tempting shortcut.
+- **Zero non-JDK dependencies.** The whole framework is one ~20 KB JAR;
+  no transitive deps, no fat-JAR machinery, drop it on your module path
+  and go.
 
 ## Further reading
 

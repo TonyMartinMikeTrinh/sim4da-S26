@@ -13,8 +13,8 @@ repositories {
 }
 
 dependencies {
-    implementation("org.slf4j:slf4j-api:2.0.13")
-    runtimeOnly("ch.qos.logback:logback-classic:1.5.6")
+    // sim4da has zero non-JDK runtime dependencies. Logging is handled
+    // by the built-in internal.EventLog — see module-info.java.
 
     testImplementation(platform("org.junit:junit-bom:5.10.2"))
     testImplementation("org.junit.jupiter:junit-jupiter")
@@ -24,7 +24,6 @@ dependencies {
 sourceSets {
     main {
         java.srcDirs("src")
-        resources.srcDirs("resources")
     }
     test {
         java.srcDirs("test")
