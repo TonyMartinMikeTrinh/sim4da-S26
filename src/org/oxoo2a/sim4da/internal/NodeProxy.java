@@ -2,6 +2,8 @@ package org.oxoo2a.sim4da.internal;
 
 import org.oxoo2a.sim4da.NetworkConnection;
 
+import java.util.concurrent.atomic.AtomicLong;
+
 /**
  * The per-node concentrator for simulation-core capabilities. Every
  * piece of framework state and behavior that a node should be able to
@@ -18,7 +20,21 @@ import org.oxoo2a.sim4da.NetworkConnection;
  */
 public class NodeProxy {
 
+    private final String nodeName;
     private final Mailbox mailbox = new Mailbox();
+
+    /**
+     * Per-node event counter. Each call to {@link #log} returns the next
+     * value, so events from one node carry monotonically increasing
+     * sequence numbers. This is the foundation that the future
+     * {@code BellTower} (Lamport / vector clocks) extends with rules for
+     * propagating sequence information across nodes via messages.
+     */
+    private final AtomicLong localSeq = new AtomicLong();
+
+    public NodeProxy(String nodeName) {
+        this.nodeName = nodeName;
+    }
 
     public void deliver(MessageInTransit mit) {
         mailbox.put(mit);
@@ -26,5 +42,12 @@ public class NodeProxy {
 
     public MessageInTransit receive() throws InterruptedException {
         return mailbox.take();
+    }
+
+    /**
+     * Records one event in this node's local timeline.
+     */
+    public void log(String event) {
+        EventLog.getInstance().record(nodeName, localSeq.incrementAndGet(), event);
     }
 }

@@ -29,7 +29,7 @@ public class Network {
     }
 
     public void registerConnection(NetworkConnection networkConnection, NodeProxy nodeProxy) {
-        EventLog.getInstance().record(networkConnection.nodeName(), "registered with the network");
+        networkConnection.log("registered with the network");
         Node n = new Node(networkConnection, nodeProxy);
         nodes.put(networkConnection.nodeName(), n);
     }
@@ -59,8 +59,7 @@ public class Network {
 
     public void send (Message message, NetworkConnection sender, String receiverName ) throws UnknownNodeException {
         if (!nodes.containsKey(receiverName)) {
-            EventLog.getInstance().record(sender.nodeName(),
-                    "attempted send to non-existent node " + receiverName);
+            sender.log("attempted send to non-existent node " + receiverName);
             throw new UnknownNodeException(receiverName);
         }
         MessageInTransit mit = new MessageInTransit(message, sender.nodeName());

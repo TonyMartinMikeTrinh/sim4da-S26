@@ -135,18 +135,22 @@ enforces this: a node thread that calls `stop()` gets an
 
 Every send, receive, broadcast, and any algorithm-level event you record
 yourself appears as one line in `sim4da-<PID>.log` in the working
-directory. Format:
+directory. Format: `[<source>,<seq>] <event>`, where `seq` is a
+monotonically increasing per-source counter:
 
 ```
-2026-04-25T18:08:42.540234Z [0] sending to 1
-2026-04-25T18:08:42.540496Z [1] received from 0
+[Coordinator,2] sending to 0
+[0,2] received from Coordinator
+[0,3] sending to 1
+[1,2] received from 0
 ```
 
-Calls from one node appear in the order they were made (each node runs
-on its own thread); cross-node order is whatever the JVM scheduler
-produced — which for an event-driven simulator *is* the timeline. The
-log is meant to be read after the run, to investigate liveness, safety,
-and ordering properties of your algorithm.
+Reading one node's events in increasing `seq` order gives that node's
+local timeline. Cross-node order in the file is the JVM's commit
+order, deliberately *not* a global wall-clock time — distributed
+systems don't have one, and pretending otherwise would teach the wrong
+lesson. Causality between nodes has to be reconstructed from the
+messages themselves (or, when `BellTower` lands, from logical clocks).
 
 To record an event from inside `engage()`:
 

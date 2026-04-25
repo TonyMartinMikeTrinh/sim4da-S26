@@ -6,6 +6,7 @@ import org.oxoo2a.sim4da.internal.Network;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Lifecycle controller for a sim4da run. There is exactly one Simulator
@@ -31,9 +32,14 @@ import java.util.concurrent.TimeUnit;
  */
 public class Simulator {
     private final String version = "sim4da Summer 2025";
+    private final AtomicLong simulatorSeq = new AtomicLong();
     private  Simulator () {
         System.out.println(version);
-        EventLog.getInstance().record("Simulator", version + " - simulation started.");
+        log(version + " - simulation started.");
+    }
+
+    private void log(String event) {
+        EventLog.getInstance().record("Simulator", simulatorSeq.incrementAndGet(), event);
     }
 
     public static Simulator getInstance() {
@@ -131,7 +137,7 @@ public class Simulator {
         startSignal = new CountDownLatch(1);
         stopSignal = new CountDownLatch(1);
         simulating = false;
-        EventLog.getInstance().record("Simulator", version + " - simulation ended.");
+        log(version + " - simulation ended.");
     }
 
     public boolean isSimulating() {

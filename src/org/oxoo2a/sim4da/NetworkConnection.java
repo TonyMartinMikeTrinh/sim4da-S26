@@ -36,7 +36,7 @@ public class NetworkConnection {
      */
     public NetworkConnection(String nodeName ) {
         this.nodeName = nodeName;
-        peer = new NodeProxy();
+        peer = new NodeProxy(nodeName);
         network.registerConnection(this,peer);
     }
 
@@ -156,15 +156,15 @@ public class NetworkConnection {
     }
 
     /**
-     * Records one event to the framework's log file
-     * ({@code sim4da-<PID>.log}). The line is tagged with this node's
-     * name and an ISO-8601 timestamp; calls from one node appear in the
-     * order they were made (each node runs on its own thread). Useful
-     * for algorithm-level events the student wants to inspect after a
-     * simulation run.
+     * Records one event in this node's local timeline. The line is
+     * tagged with {@code [<nodeName>,<seq>]} where {@code seq} is a
+     * monotonically increasing per-node counter — calls from one node
+     * appear in the order they were made. Cross-node order in the log
+     * file is left unspecified; causality between nodes is something
+     * the algorithm establishes via messages.
      */
     public void log(String event) {
-        EventLog.getInstance().record(nodeName, event);
+        peer.log(event);
     }
 
     private final String nodeName;

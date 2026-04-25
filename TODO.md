@@ -74,4 +74,26 @@ naturally lives on `NodeProxy` because each node has its own clock.
 
 ## Ideas / nice-to-haves
 
-*(Seed — fills as ideas appear.)*
+### Per-node HostClock — clock-skew simulation
+
+A per-node fake physical clock with a random offset from "true time"
+and (optionally time-varying) drift. Different in purpose from the
+logical-clock `BellTower`:
+
+- `BellTower` is about *causality* — teaching Lamport timestamps,
+  vector clocks, happened-before reasoning.
+- `HostClock` is about *clock synchronization* — teaching NTP,
+  Berkeley algorithm, Christian's algorithm. Students write
+  algorithms that have to reconcile divergent local clocks.
+
+**Open design questions:**
+
+- *Skew model* — constant offset (simplest); offset + linear drift;
+  or time-varying offset/drift via a configurable function?
+- *Where it lives* — `HostClock` per node on `NodeProxy` per the
+  layering discipline, surfaced as `now()` on `NetworkConnection`
+  and `Node`.
+- *Whether the log line should include the host-clock reading* —
+  lean towards "no". `[node,seq]` is for causality; clock readings
+  are algorithm-level data students surface explicitly via
+  `log("t=" + now())`.

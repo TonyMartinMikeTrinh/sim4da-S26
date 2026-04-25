@@ -5,7 +5,6 @@ import java.io.PrintWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
-import java.time.Instant;
 
 /**
  * The framework's event log.
@@ -15,16 +14,18 @@ import java.time.Instant;
  * appears here as a single line:
  *
  * <pre>{@code
- *   <ISO 8601 timestamp> [<source>] <event message>
+ *   [<source>,<seq>] <event message>
  * }</pre>
  *
- * <p>Per-node chronological order is preserved automatically because each
- * node calls {@link #record} from its own virtual thread, and the calls
- * within one thread are serial. Cross-node order is whatever the JVM's
- * scheduler produces — for an event-driven simulator that <em>is</em> the
- * observed timeline. Students analyse the merged log offline to
- * investigate liveness, safety, and ordering properties of their
- * algorithm.
+ * <p>The {@code seq} is a monotonically increasing per-source counter —
+ * for a node, it is the number of events that node has produced so far.
+ * Reading a single source's events in increasing {@code seq} order
+ * gives that source's local timeline; cross-source order is left
+ * unspecified (the file's commit order is an artifact of the
+ * simulator's host clock, not a meaningful global time). This deliberate
+ * absence of a wall-clock timestamp pushes students to reconstruct
+ * causality from the messages and local sequence numbers — the way one
+ * has to reason in a real distributed system.
  *
  * <p>Output goes to {@code sim4da-<PID>.log} in the working directory.
  * The implementation deliberately does not pull in SLF4J / Logback or
@@ -58,11 +59,12 @@ public final class EventLog {
     }
 
     /**
-     * Append one event to the log. {@link PrintWriter#println(String)}
-     * is synchronized internally, so concurrent callers each produce a
-     * complete line — never interleaved characters.
+     * Append one event to the log. The caller supplies its own per-source
+     * sequence number. {@link PrintWriter#println(String)} is synchronized
+     * internally, so concurrent callers each produce a complete line —
+     * never interleaved characters.
      */
-    public void record(String source, String event) {
-        writer.println(Instant.now() + " [" + source + "] " + event);
+    public void record(String source, long seq, String event) {
+        writer.println("[" + source + "," + seq + "] " + event);
     }
 }
