@@ -1,8 +1,26 @@
 package org.oxoo2a.sim4da;
 
 /**
- * Primary base class for simulating a node in a distributed algorithm.
- * Sets up networking and provides basic messaging operations.
+ * The physical-machine abstraction in a sim4da simulation. Subclasses
+ * personalize a node by overriding {@link #engage} with whatever algorithm
+ * they want that node to run.
+ *
+ * <p>Each node runs on its own virtual thread and exchanges messages with
+ * other nodes via {@link #send}, {@link #broadcast}, and {@link #receive}.
+ * That is all the framework commits to — it deliberately does <em>not</em>
+ * commit to the Actor model. A node's {@code engage} body is free to:
+ *
+ * <ul>
+ *   <li>spawn helper threads,</li>
+ *   <li>hold non-trivial state across messages,</li>
+ *   <li>follow synchronous-round, quorum-based, gossip, or any other
+ *       discipline besides "process one message at a time".</li>
+ * </ul>
+ *
+ * <p>If extending {@code Node} does not fit your design — for instance,
+ * because your algorithmic class already has a parent — use the HAS-A
+ * pattern instead: own a {@link NetworkConnection} directly and engage it
+ * with a {@link Runnable}.
  */
 public class Node {
 

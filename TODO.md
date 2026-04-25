@@ -64,10 +64,6 @@ naturally lives on `NodeProxy` because each node has its own clock.
 
 ## Mechanical cleanup (when convenient)
 
-- **`Node` → `Actor` rename.** Public API change: every existing
-  course exercise that says `extends Node` would need a search/replace.
-  Aligns the framework's vocabulary with the lecture's
-  ("Node = physical machine; Actor = the algorithm running on it").
 - **`module-info.java` rework.** Currently passive in tests
   (modularity inference disabled in `build.gradle.kts`). Revisit once
   `Topology` and `BellTower` settle the package layout — module
