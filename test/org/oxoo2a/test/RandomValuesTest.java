@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Test;
 import org.oxoo2a.sim4da.RandomValues;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  * Regression test for {@link RandomValues}. Before this test existed,
@@ -32,5 +33,13 @@ class RandomValuesTest {
     void getLongFloorsTheScaledValue() {
         RandomValues r = new RandomValues(() -> 0.999);
         assertEquals(9L, r.getLong(0, 10));
+    }
+
+    @Test
+    void getDoubleThrowsWhenSupplierOutOfRange() {
+        assertThrows(IllegalStateException.class,
+                () -> new RandomValues(() -> 1.5).getDouble(0, 100));
+        assertThrows(IllegalStateException.class,
+                () -> new RandomValues(() -> -0.5).getDouble(0, 100));
     }
 }

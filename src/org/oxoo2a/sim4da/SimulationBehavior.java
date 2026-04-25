@@ -7,13 +7,11 @@ public class SimulationBehavior {
     // Distribution function for the selection of the next message in a message queue
     private static RandomValues r_message_queue_selection = null;
     public static void setMessageQueueSelectionDistributionFunction ( Supplier<Double> df_message_queue_selection ) {
-        if (r_message_queue_selection == null) {
-            r_message_queue_selection = new RandomValues(df_message_queue_selection);
+        if (r_message_queue_selection != null) {
+            throw new OverwriteDistributionFunctionException(
+                    "Distribution function for message queue selection has already been set");
         }
-        else {
-            System.err.println("Distribution function for message queue selection has already been set.");
-            System.exit(-1);
-        }
+        r_message_queue_selection = new RandomValues(df_message_queue_selection);
     }
     public static int selectMessageInQueue ( int queue_size ) {
         assert(queue_size > 0);

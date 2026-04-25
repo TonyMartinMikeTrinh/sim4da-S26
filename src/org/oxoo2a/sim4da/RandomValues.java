@@ -11,8 +11,8 @@ public class RandomValues {
     public double getDouble( double min_value, double max_value ) {
         double v = distributionFunction.get();
         if (v < 0 || v > 1) {
-            System.err.println("Distribution function must return a value between 0 and 1");
-            System.exit(-1);
+            throw new IllegalStateException(
+                    "Distribution function returned " + v + " — must be in [0, 1]");
         }
         return min_value + v * (max_value - min_value);
     }
