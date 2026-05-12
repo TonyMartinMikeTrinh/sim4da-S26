@@ -1,5 +1,13 @@
 # sim4da — Review & Modernization Verdict
 
+> **Historical context.** This is the code review that drove the Summer
+> 2026 modernization of sim4da. Everything below was written *before*
+> the work landed; the resulting commits are the answer to every "fix
+> this" / "redesign that" recommendation here. Read it as a study in
+> how an existing teaching framework was brought forward to Java 25 —
+> *not* as a description of the current code. For the up-to-date API,
+> start with [../README.md](../README.md).
+
 A code review of `sim4da-S26` (branch `module`) focused on the stated goals:
 maximize Java's modern features, achieve high software aesthetics, demonstrate
 the structure of an event-driven simulator, and keep complex distributed

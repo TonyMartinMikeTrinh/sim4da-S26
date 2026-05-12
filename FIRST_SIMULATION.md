@@ -1,11 +1,17 @@
 # My first simulation of a distributed algorithm
 
-This walkthrough takes a complete sim4da test —
-[`OneRingToRuleThemAllTest`](test/org/oxoo2a/test/OneRingToRuleThemAllTest.java)
-— and unpacks it line by line. By the end you'll have read a token-ring
-simulation top to bottom: both the **IS-A** and **HAS-A** node patterns,
-record-based messages, pattern-matching receive, and termination by
-propagating an `EndMessage` through the ring.
+This walkthrough takes a complete sim4da example —
+[`OneRingToRuleThemAllTest`](test/org/oxoo2a/test/OneRingToRuleThemAllTest.java),
+the canonical "Hello, world!" of the framework — and unpacks it line by
+line. By the end you'll have read a token-ring simulation top to bottom:
+both the **IS-A** and **HAS-A** node patterns, record-based messages,
+pattern-matching receive, and termination by propagating an `EndMessage`
+through the ring.
+
+You can either follow along by reading the file linked above, or paste
+the snippets below into a fresh project that uses `sim4da.jar` on its
+module path (see [README.md](README.md#quick-start) for the one-time
+setup). The framework code is identical either way.
 
 ## The problem
 
@@ -187,15 +193,22 @@ Six lines of meaningful work:
 
 ## Running it
 
+Inside this repository:
+
 ```
 ./gradlew test --tests OneRingToRuleThemAllTest
 ```
 
-Expected console output (the message order is deterministic; the timing
-comes from the half-second sleeps in the segments):
+In your own project that depends on `sim4da.jar`: drop the snippets above
+into a class, expose the `@Test` method to JUnit 5 (or wrap the body in a
+plain `main`), and run it through your build tool of choice. The
+framework code does not care which.
+
+Expected console output either way (the message order is deterministic;
+the timing comes from the half-second sleeps in the segments):
 
 ```
-sim4da Summer 2025
+sim4da Summer 2026
 Ring segment 0 received token 0 from Coordinator
 Ring segment 1 received token 1 from 0
 Ring segment 2 received token 2 from 1

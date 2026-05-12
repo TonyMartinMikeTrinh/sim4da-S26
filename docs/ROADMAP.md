@@ -1,6 +1,6 @@
-# TODO
+# Roadmap
 
-A living list of ideas and design questions for sim4da. Two rules:
+What is being designed next for sim4da. Two rules:
 
 1. **Anything ambiguous lives here**, not in code comments or commit
    messages. The repo's source is for decisions that have been made;
@@ -8,6 +8,11 @@ A living list of ideas and design questions for sim4da. Two rules:
 2. **Open questions are framed as questions.** Once a question gets a
    verdict, the verdict becomes a one-liner and the work gets done — at
    which point the entry leaves this file.
+
+Students do not need to wait for any of this to land: the framework as
+shipped in `sim4da.jar` is complete and stable for the exercises that
+target it. The roadmap is here so that the curious can see where things
+are going.
 
 ---
 
@@ -59,16 +64,6 @@ naturally lives on `NodeProxy` because each node has its own clock.
   to read explicitly?
 - *Independence* — confirm BellTower works regardless of the chosen
   topology.
-
----
-
-## Mechanical cleanup (when convenient)
-
-- **`stash/` deletion or revival.** The files in `stash/` reference an
-  old key/value Message API; they don't compile against the current
-  framework. Either delete outright, or restore that API as a
-  `record MapMessage(Map<String, String> entries) implements Message`
-  for ad-hoc demos where students don't want to define classes.
 
 ---
 
