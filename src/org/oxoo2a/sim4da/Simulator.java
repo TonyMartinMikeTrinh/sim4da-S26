@@ -31,7 +31,7 @@ import java.util.concurrent.atomic.AtomicLong;
  * runs many tests in the same JVM remains independent.
  */
 public class Simulator {
-    private final String version = "sim4da Summer 2025";
+    private final String version = "sim4da Summer 2026";
     private final AtomicLong simulatorSeq = new AtomicLong();
     private  Simulator () {
         System.out.println(version);
