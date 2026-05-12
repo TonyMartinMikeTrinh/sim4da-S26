@@ -55,3 +55,19 @@ tasks.test {
         showStandardStreams = true
     }
 }
+
+// Every successful `./gradlew jar` also refreshes the copy of the JAR
+// that lives at the repo root — that copy is what students grab. The
+// build/libs/ artifact remains canonical; the root copy is a
+// convenience mirror, kept in sync automatically.
+tasks.jar {
+    val rootCopy = layout.projectDirectory.file("sim4da.jar")
+    outputs.file(rootCopy)
+    doLast {
+        copy {
+            from(archiveFile)
+            into(layout.projectDirectory)
+            rename { "sim4da.jar" }
+        }
+    }
+}
